@@ -14,6 +14,14 @@ def get_values_from_file(path_to_file: str) -> list[str]:
         return stripped_lines
 
 def part_one(lines: list[str]) -> int:
+    """Returns the highest amount of calories an elf is carrying
+
+    Args:
+        lines (list[str]): list of calories
+
+    Returns:
+        int: highest amount of calories
+    """
     highest_calories: int = 0
     calories: int = 0
     for i in range(len(lines)):
@@ -28,6 +36,14 @@ def part_one(lines: list[str]) -> int:
     return highest_calories
 
 def part_two(lines: list[str]) -> int:
+    """Returns the sum of the top three caloric elfs
+
+    Args:
+        lines (list[str]): list of calories
+
+    Returns:
+        int: sum of the top 3 elfs highest amount of calories
+    """
     calories: int = 0
     top_3_highest_calories: list[int] = [0,0,0]
     for i in range(len(lines)):
