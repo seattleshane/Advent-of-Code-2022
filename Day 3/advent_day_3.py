@@ -108,15 +108,13 @@ def part_two(ruck_sacks: list[str], group_size: int = 3) -> int:
         grouped_rucksacks = [ruck_sacks[i + j] for j in range(group_size)]
         grouped_rucksacks.sort(key=len)
         for character in grouped_rucksacks[0]:
-            if character in grouped_rucksacks[1] and character in grouped_rucksacks[2]:
-                group_badge = character
+            test_case: list[bool] = [character in rucksack for rucksack in grouped_rucksacks]
+            if all(test_case):
+                total.append(values_dict.get(character))
                 break
-        if group_badge:
-            total.append(values_dict.get(group_badge))
-    print(total)
     return sum(total)
 
 if __name__ == "__main__":
-    ruck_sacks = get_values_from_file("Path to file")
-    part_one(ruck_sacks)
-    part_two(ruck_sacks)
+    ruck_sacks = get_values_from_file("Path")
+    print(f"Solution to Part One: {part_one(ruck_sacks)}")
+    print(f"Solution to Part Two: {part_two(ruck_sacks)}")
