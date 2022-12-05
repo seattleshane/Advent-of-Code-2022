@@ -7,7 +7,6 @@ def get_values_from_file(path_to_file: str) -> list[str]:
     Returns:
         list[str]: Lines as a list of strings
     """
-    ruck_sacks = []
     with open(path_to_file) as file:
         lines = file.readlines()
         stripped_lines = [line.rstrip() for line in lines]
