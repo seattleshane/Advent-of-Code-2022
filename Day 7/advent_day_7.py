@@ -1,5 +1,5 @@
 class Directory():
-    def __init__(self, name: str, parent):  # type: ignore
+    def __init__(self, name: str, parent: "Directory"):  # type: ignore
         self.parent = parent
         self.name = name
         self.children: list[Directory] = []
