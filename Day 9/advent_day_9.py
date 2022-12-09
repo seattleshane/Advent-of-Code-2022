@@ -1,12 +1,15 @@
 import numpy as np
+import sys
+np.set_printoptions(threshold=sys.maxsize)
 
 
 class Head():
     def __init__(self):
         self.x: int = 0
         self.y: int = 0
+        self.name: str = "H"
 
-    def move_head(self, direction: str, tail: "Tail"):
+    def move(self, direction: str, tail: "Tail"):
         if direction == "U":
             self.y += 1
         if direction == "D":
@@ -19,14 +22,74 @@ class Head():
         print(f"Tail: {tail.x}, {tail.y}")
         print("Next move tail")
 
+
+class Segment():
+    def __init__(self, name: str):
+        self.x: int = 0
+        self.y: int = 0
+        self.name: str = name
+
+    def move(self, parent):
+        diagonal: bool = False
+        touching: bool = False
+        x_difference = (self.x - parent.x)
+        y_difference = (self.y - parent.y)
+        touching_distances = [1, 0, -1]
+        diagonal_distances_1 = [2, -2]
+        diagonal_distances_2 = [1, -1]
+        if (
+            x_difference in touching_distances and
+            y_difference in touching_distances
+        ):
+            touching = True
+        if (
+            x_difference in diagonal_distances_1 and
+            y_difference in diagonal_distances_2
+        ):
+            diagonal = True
+        if (
+            y_difference in diagonal_distances_1 and
+            x_difference in diagonal_distances_2
+        ):
+            diagonal = True
+        if touching:
+            pass
+        elif diagonal:
+            if parent.x > self.x:
+                if parent.y > self.y:
+                    self.x += 1
+                    self.y += 1
+                else:
+                    self.x += 1
+                    self.y -= 1
+            else:
+                if parent.y > self.y:
+                    self.x -= 1
+                    self.y += 1
+                else:
+                    self.x -= 1
+                    self.y -= 1
+        elif abs(parent.x - self.x) > abs(parent.y - self.y):
+            if parent.x > self.x:
+                self.x += 1
+            else:
+                self.x -= 1
+        elif abs(parent.y - self.y) > abs(parent.x - self.x):
+            if parent.y > self.y:
+                self.y += 1
+            else:
+                self.y -= 1
+
+
 class Tail():
     def __init__(self):
         self.x: int = 0
         self.y: int = 0
+        self.name: str = "T"
         self.cords_traversed: list[tuple[int, int]] = []
         self.cords_traversed.append((0, 0))
 
-    def move_tail(self, head: Head):
+    def move(self, head: Head | Segment):
         diagonal: bool = False
         touching: bool = False
         x_difference = (self.x - head.x)
@@ -34,11 +97,20 @@ class Tail():
         touching_distances = [1, 0, -1]
         diagonal_distances_1 = [2, -2]
         diagonal_distances_2 = [1, -1]
-        if x_difference in touching_distances and y_difference in touching_distances:
+        if (
+            x_difference in touching_distances and
+            y_difference in touching_distances
+        ):
             touching = True
-        if x_difference in diagonal_distances_1 and y_difference in diagonal_distances_2:
+        if (
+            x_difference in diagonal_distances_1 and
+            y_difference in diagonal_distances_2
+        ):
             diagonal = True
-        if y_difference in diagonal_distances_1 and x_difference in diagonal_distances_2:
+        if (
+            y_difference in diagonal_distances_1 and
+            x_difference in diagonal_distances_2
+        ):
             diagonal = True
         if touching:
             pass
@@ -56,7 +128,7 @@ class Tail():
                     self.y += 1
                 else:
                     self.x -= 1
-                    self.y -= 1             
+                    self.y -= 1
         elif abs(head.x - self.x) > abs(head.y - self.y):
             if head.x > self.x:
                 self.x += 1
@@ -93,23 +165,44 @@ def part_one(lines: list[str]):
         direction = move.split(" ")[0]
         spaces = int(move.split(" ")[1])
         for i in range(spaces):
-            head.move_head(direction, tail)
-            # print_position(head, tail)
-            tail.move_tail(head)
-            # print_position(head, tail)
+            head.move(direction, tail)
+            # print_position(rope)
+            tail.move(head)
+            # print_position(rope)
     return len(list(set(tail.cords_traversed)))
 
 
 def part_two(lines: list[str]):
-    pass
+    head = Head()
+    tail = Tail()
+    rope: list[Head | Tail | Segment] = [head]
+    for i in range(1, 9):
+        rope.append(Segment(str(i)))
+    rope.append(tail)
+    for move in lines:
+        direction = move.split(" ")[0]
+        spaces = int(move.split(" ")[1])
+        for i in range(spaces):
+            for index, seg in enumerate(rope):
+                if isinstance(seg, Head):
+                    seg.move(direction, tail)
+                else:
+                    segment = rope[index-1]
+                    if isinstance(segment, Segment | Head):
+                        seg.move(segment)
+            print_position(rope)
+    return len(list(set(tail.cords_traversed)))
 
 
-def print_position(head: Head, tail: Tail):
-    game_board = np.zeros((10, 10), dtype=str)
+def print_position(rope: list[Head | Tail | Segment]):
+    x_size = 100
+    y_size = 100
+    game_board = np.zeros((x_size, y_size), dtype=str)
     game_board.fill("0")
-    game_board[head.x][head.y] = "H"
-    game_board[tail.x][tail.y] = "T"
-    print(game_board)
+    for segment in rope:
+        game_board[segment.x + 50][segment.y + 50] = segment.name
+    for line in game_board:
+        print(line)
     print("\n")
 
 
@@ -117,6 +210,6 @@ if __name__ == "__main__":
     lines = get_values_from_file(
         "C:\\Users\\srideout\\Desktop\\Advent of Code\\day_9.txt"
     )
-    print(part_one(lines))
+    # print(part_one(lines))
     print(part_two(lines))
     print("stop")
