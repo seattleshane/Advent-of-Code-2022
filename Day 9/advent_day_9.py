@@ -183,14 +183,12 @@ def part_two(lines: list[str]):
         direction = move.split(" ")[0]
         spaces = int(move.split(" ")[1])
         for i in range(spaces):
-            for index, seg in enumerate(rope):
-                if isinstance(seg, Head):
-                    seg.move(direction, tail)
+            for i in range(len(rope)):
+                if isinstance(rope[i], Head):
+                    head.move(direction, tail)
                 else:
-                    segment = rope[index-1]
-                    if isinstance(segment, Segment | Head):
-                        seg.move(segment)
-            print_position(rope)
+                    rope[i].move(rope[i-1])
+            # print_position(rope)
     return len(list(set(tail.cords_traversed)))
 
 
