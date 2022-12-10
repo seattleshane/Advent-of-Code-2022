@@ -36,7 +36,7 @@ class Segment():
         y_difference = (self.y - parent.y)
         touching_distances = [1, 0, -1]
         diagonal_distances_1 = [2, -2]
-        diagonal_distances_2 = [1, -1]
+        diagonal_distances_2 = [2, 1, -1, -2]
         if (
             x_difference in touching_distances and
             y_difference in touching_distances
@@ -96,7 +96,9 @@ class Tail():
         y_difference = (self.y - head.y)
         touching_distances = [1, 0, -1]
         diagonal_distances_1 = [2, -2]
-        diagonal_distances_2 = [1, -1]
+        diagonal_distances_2 = [2, 1, -1, -2]
+        if x_difference == -3 or y_difference == -3:
+            print("Hey look a 3")
         if (
             x_difference in touching_distances and
             y_difference in touching_distances
@@ -206,7 +208,7 @@ def print_position(rope: list[Head | Tail | Segment]):
 
 if __name__ == "__main__":
     lines = get_values_from_file(
-        "C:\\Users\\srideout\\Desktop\\Advent of Code\\day_9.txt"
+        "C:\\Users\\Shane\\Documents\\GitHub\\Advent-of-Code-2022\\Puzzle Files\\day_9.txt"
     )
     # print(part_one(lines))
     print(part_two(lines))
