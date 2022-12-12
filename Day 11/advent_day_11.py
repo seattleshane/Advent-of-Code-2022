@@ -122,7 +122,6 @@ def print_status(round: int, list_of_monkeys: list[Monkey]):
         f"Money 3 inspected item {list_of_monkeys[3].inspected_items}\n"
     )
 
-
 def parse_input(parsed_lines: list[str], list_of_monkeys: list[Monkey], if_part_two: bool = False):
     for i in range(0, len(parsed_lines), 7):
         lines = parsed_lines[i:i+7]
