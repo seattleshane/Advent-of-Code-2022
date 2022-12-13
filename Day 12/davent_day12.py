@@ -38,55 +38,26 @@ def get_values_from_file(path_to_file: str) -> list[str]:
 
 def part_one(lines: list[str]):
     game_board: GameBoard = parse_input(lines)
-    print(simple_path(game_board))
+    print(simple_path(game_board, [0,0]))
 
 
 def part_two(lines: list[str]):
-    pass
+    game_board: GameBoard = parse_input(lines)
+    answer = []
+    cords = []
+    for cord in game_board.a_cords:
+        answer.append(simple_path(game_board, cord))
+        cords.append(cord)
+    return min(answer)
 
-
-# def pathing(game_board: GameBoard):
-#     north_path: list[int] = []
-#     south_path: list[int] = []
-#     east_path: list[int] = []
-#     west_path: list[int] = []
-#     paths = list[list[int]] = []
-#     for east in range(len(
-#         game_board.start_x),
-#         len(game_board.start_x) - game_board.start_x
-#     ):
-#         east_path.append(game_board.matrix[east][game_board.start_y])
-
-#     for west in range(len(
-#         game_board.start_x),
-#         game_board.start_x -len(game_board.start_x), -1
-#     ):
-#         west_path.append(game_board.matrix[west][game_board.start_y])
-
-#     for north in range(len(
-#         game_board.start_y),
-#         len(game_board.start_y) - game_board.start_y
-#     ):
-#         north_path.append(game_board.matrix[game_board.start_y][north])
-#     for south in range(len(
-#         game_board.start_y),
-#         game_board.start_y -len(game_board.start_y), -1
-#     ):
-#         south_path.append(game_board.matrix[game_board.start_y][south])
-#     paths.append(
-#         north_path,
-#         south_path,
-#         east_path,
-#         west_path,
-# )
 
 PRINT_GAME_BOARD = False
 
-def simple_path(game_board: GameBoard):
+def simple_path(game_board: GameBoard, starting_cords: tuple[int, int]):
     is_complete: bool = False
     open_list: dict[tuple[int, int], int] = {}
     closed_list: dict[tuple[int, int], int] = {}
-    open_list[(game_board.start_y, game_board.start_x)] = 0
+    open_list[(starting_cords[0], starting_cords[1])] = 0
     best_distance: int = 1_000_000_000
     distance: int = -1
     while not is_complete:
@@ -129,7 +100,9 @@ def simple_path(game_board: GameBoard):
             closed_list[position[0], position[1]] = distance
         if len(new_open_list) == 0:
             best_distance = 1_000_000
+            return best_distance
         open_list = new_open_list
+    print(best_distance)
     return best_distance
 
 
@@ -146,7 +119,7 @@ def parse_input(lines: list[str]):
         for j in range(len(lines[0])):
             character = lines[i][j]
             if character == "a":
-                a_cords.append((j, i))
+                a_cords.append((i, j))
             if character == "S":
                 start_x = j
                 start_y = i
