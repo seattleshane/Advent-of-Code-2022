@@ -1,5 +1,5 @@
 import numpy as np
-
+import sys
 
 class GameBoard():
     def __init__(
@@ -11,6 +11,7 @@ class GameBoard():
         goal_y: int,
         width: int,
         height: int,
+        a_cords = list[tuple[int, int]]
     ):
         self.matrix = matrix
         self.start_x: int = start_x
@@ -19,6 +20,7 @@ class GameBoard():
         self.goal_y: int = goal_y
         self.width: int = width
         self.height: int = height
+        self.a_cords: int = a_cords
 
 
 def get_values_from_file(path_to_file: str) -> list[str]:
@@ -36,7 +38,7 @@ def get_values_from_file(path_to_file: str) -> list[str]:
 
 def part_one(lines: list[str]):
     game_board: GameBoard = parse_input(lines)
-    simple_path(game_board)
+    print(simple_path(game_board))
 
 
 def part_two(lines: list[str]):
@@ -78,60 +80,55 @@ def part_two(lines: list[str]):
 #         west_path,
 # )
 
+PRINT_GAME_BOARD = False
+
 def simple_path(game_board: GameBoard):
     is_complete: bool = False
     open_list: dict[tuple[int, int], int] = {}
     closed_list: dict[tuple[int, int], int] = {}
-    approached_positions: dict[tuple[int, int], bool] = {}
-    approached_positions[game_board.goal_y, game_board.goal_x] = True
-    open_list[game_board.start_x, game_board.start_y] = 0
+    open_list[(game_board.start_y, game_board.start_x)] = 0
     best_distance: int = 1_000_000_000
     distance: int = -1
     while not is_complete:
         new_open_list: dict[tuple[int, int], int] = {}
         for position in open_list:
-            if (
-                ((position[0], position[1]) not in closed_list)
-            ):
-                distance = open_list[(position[0], position[1])]
-                distance += 1
-                heights: list[int] = []
-                position_height = game_board.matrix[position[0]][position[1]]
-                heights.append(position_height)
-                heights.append(position_height + 1)
-                # print_game_board(
-                #     game_board,
-                #     position[0],
-                #     position[1],
-                #     open_list,
-                #     closed_list
-                # )
-                if position[0] == game_board.goal_y and position[1] == game_board.goal_x:
-                    is_complete = True
-                    best_distance = distance - 1
-                for height in range(position_height - 1, -1, -1):
-                    heights.append(height)
-                right = position[1] + 1
-                left = position[1] - 1
-                up = position[0] + 1
-                down = position[0] - 1
-                if (right) < game_board.width:
-                    if (game_board.matrix[position[0]][right] in heights):
-                        if ((position[0], right, distance) not in open_list):
-                            new_open_list[position[0], right] = distance
-                if (left) >= 0:
-                    if (game_board.matrix[position[0]][left] in heights):
-                        if (((position[0], left, distance) not in open_list)):
-                            new_open_list[position[0], left] = distance
-                if (up) < game_board.height:
-                    if (game_board.matrix[up][position[1]] in heights):
-                        if (up, position[1], distance) not in open_list:
-                            new_open_list[up, position[1]] = distance
-                if (down) >= 0:
-                    if (game_board.matrix[down][position[1]] in heights):
-                        if (down, position[1], distance) not in open_list:
-                            new_open_list[down, position[1]] = distance
-                closed_list[position[0], position[1]] = distance
+            distance = open_list[(position[0], position[1])] + 1
+            position_height = game_board.matrix[position[0]][position[1]]
+            if PRINT_GAME_BOARD:
+                print_game_board(
+                    game_board,
+                    position[0],
+                    position[1],
+                    open_list,
+                    closed_list
+                )
+            if position[0] == game_board.goal_y and position[1] == game_board.goal_x:
+                is_complete = True
+                best_distance = distance - 1
+            heights = range(position_height + 1, -1, -1)
+            right = position[1] + 1
+            left = position[1] - 1
+            up = position[0] + 1
+            down = position[0] - 1
+            if (right) < game_board.width:
+                if (game_board.matrix[position[0]][right] in heights):
+                    if (position[0], right) not in open_list and (position[0],right) not in closed_list:
+                        new_open_list[(position[0], right)] = distance
+            if (left) >= 0:
+                if (game_board.matrix[position[0]][left] in heights):
+                    if (position[0], left) not in open_list and (position[0],left) not in closed_list:
+                        new_open_list[(position[0], left)] = distance
+            if (up) < game_board.height:
+                if (game_board.matrix[up][position[1]] in heights):
+                    if (up, position[1]) not in open_list and (up, position[1]) not in closed_list:
+                        new_open_list[(up, position[1])] = distance
+            if (down) >= 0:
+                if (game_board.matrix[down][position[1]] in heights):
+                    if (down, position[1]) not in open_list and (down, position[1]) not in closed_list:
+                        new_open_list[(down, position[1])] = distance
+            closed_list[position[0], position[1]] = distance
+        if len(new_open_list) == 0:
+            best_distance = 1_000_000
         open_list = new_open_list
     return best_distance
 
@@ -144,19 +141,22 @@ def parse_input(lines: list[str]):
     start_y: int = 0
     goal_x: int = 0
     goal_y: int = 0
-
+    a_cords: list[tuple[int, int]] = []
     for i in range(len(lines)):
         for j in range(len(lines[0])):
             character = lines[i][j]
+            if character == "a":
+                a_cords.append((j, i))
             if character == "S":
                 start_x = j
                 start_y = i
+                matrix[i][j] = 0
             elif character == "E":
                 goal_x = j
                 goal_y = i
-                matrix[i][j] = 25
+                matrix[i][j] = ord('z') - ord('a')
             else:
-                matrix[i][j] = ord(character) - 97
+                matrix[i][j] = ord(character) - ord('a')
     return GameBoard(
         matrix,
         start_x,
@@ -165,6 +165,7 @@ def parse_input(lines: list[str]):
         goal_y,
         width,
         height,
+        a_cords,
     )
 
 
@@ -182,12 +183,16 @@ def print_game_board(
     for closed_item in closed_ist:
         printed_game_board[closed_item[0], closed_item[1]] = "X"
     printed_game_board[position_y, position_x] = "█"
-    print(printed_game_board)
+    for row in printed_game_board:
+        for x in row:
+            sys.stdout.write(x)
+        print()
+    #print(printed_game_board)
 
 
 if __name__ == "__main__":
     lines = get_values_from_file(
-        "C:\\Users\\srideout\\Desktop\\Advent of Code\\example.txt"
+        "C:\\Users\\Shane\\Documents\\GitHub\\Advent-of-Code-2022\\Puzzle Files\\day_12.txt"
     )
     print(part_one(lines))
     print(part_two(lines))
