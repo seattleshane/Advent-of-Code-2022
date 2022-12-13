@@ -19,8 +19,8 @@ def part_one(lines: list[str]):
     indicies: list[int] = []
     packets = parse_lines(lines)
     for index, packet in enumerate(packets):
-        if left_or_right(packet):
-            indicies.append(index)
+        if evaluate_even(packet):
+            indicies.append(index + 1)
 
 
 def part_two(lines: list[str]):
@@ -36,23 +36,30 @@ def parse_lines(lines: list[str]):
         packets.append(PairOfPackets(left, right))
     return packets
 
-def left_or_right(packet: PairOfPackets) -> bool:
-    left = packet.left
-    right = packet.right
-    len_left = len(packet.left)
-    len_right = len(packet.right)
 
-    if len_left == len_right:
-        return evaluate_even(left, right)
-    else:
-        return False
-
-
-def evaluate_even(left_list: list, right_list: list) -> bool:
+def evaluate_even(packet: PairOfPackets) -> bool:
+    left_list = packet.left
+    right_list = packet.right
     is_correct: bool = True
     for i in range(len(left_list)):
-        left = left_list[i]
-        right = right_list[i]
+        if len(left_list) == len(right_list):
+            left = left_list[i]
+            right = right_list[i]
+        if type(left_list[i]) == type(right_list[i]):
+            left = left_list[i]
+            right = right_list[i]
+        else:
+            # Garbage code for tired people
+            if isinstance(left_list[i], int):
+                left = left_list[i]
+            if isinstance(right_list[i], int):
+                right = right_list[i]
+
+            if isinstance(left_list[i], list) and len(left_list[i]) == 0:
+                return True
+            if isinstance(right_list[i], list) and len(right_list[i]) == 0:
+                return False
+            
         left_type = type(left_list[i])
         right_type = type(right_list[i])
         if left_type == right_type and left_type == int:
@@ -64,6 +71,14 @@ def evaluate_even(left_list: list, right_list: list) -> bool:
                 right = unpack_to_list(right)
                 if left > right:
                     return False
+        elif isinstance(left, list) and isinstance(right, int):
+            right = unpack_to_list(right)
+            if left > right:
+                return False
+        elif isinstance(left, int) and isinstance(right, list):
+            left = unpack_to_list(left)
+            if left > right:
+                return False
     return is_correct
 
 def unpack_to_list(item) -> list:
