@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class GameBoard():
     def __init__(
         self,
@@ -19,6 +20,7 @@ class GameBoard():
         self.width: int = width
         self.height: int = height
 
+
 def get_values_from_file(path_to_file: str) -> list[str]:
     """Takes a path to a text file and returns the lines as a list of strings.
     Args:
@@ -31,12 +33,15 @@ def get_values_from_file(path_to_file: str) -> list[str]:
         stripped_lines = [line.rstrip() for line in lines]
         return stripped_lines
 
+
 def part_one(lines: list[str]):
-    game_board: game_board = parse_input(lines)
+    game_board: GameBoard = parse_input(lines)
     simple_path(game_board)
+
 
 def part_two(lines: list[str]):
     pass
+
 
 # def pathing(game_board: GameBoard):
 #     north_path: list[int] = []
@@ -75,62 +80,62 @@ def part_two(lines: list[str]):
 
 def simple_path(game_board: GameBoard):
     is_complete: bool = False
-    open_list: list[tuple[int, int]] = []
-    closed_list: list[tuple[int, int]] = []
+    open_list: dict[tuple[int, int], int] = {}
+    closed_list: dict[tuple[int, int], int] = {}
+    approached_positions: dict[tuple[int, int], bool] = {}
+    approached_positions[game_board.goal_y, game_board.goal_x] = True
+    open_list[game_board.start_x, game_board.start_y] = 0
     best_distance: int = 1_000_000_000
+    distance: int = -1
     while not is_complete:
-        open_list.append((game_board.start_x, game_board.start_y))
+        new_open_list: dict[tuple[int, int], int] = {}
         for position in open_list:
-            if position not in closed_list:
+            if (
+                ((position[0], position[1]) not in closed_list)
+            ):
+                distance = open_list[(position[0], position[1])]
+                distance += 1
                 heights: list[int] = []
                 position_height = game_board.matrix[position[0]][position[1]]
                 heights.append(position_height)
                 heights.append(position_height + 1)
-                # TODO: Either, change lists to hash maps and include the distance, number of steps to get to the point
-                # or add 
-                for height in range(position_height, 0, -1):
+                # print_game_board(
+                #     game_board,
+                #     position[0],
+                #     position[1],
+                #     open_list,
+                #     closed_list
+                # )
+                if position[0] == game_board.goal_y and position[1] == game_board.goal_x:
+                    is_complete = True
+                    best_distance = distance - 1
+                for height in range(position_height - 1, -1, -1):
                     heights.append(height)
-                if (position[1] + 1) <= game_board.width:
-                    if (
-                        game_board.matrix[position[0]][position[1] + 1] in heights
-                    ):
-                        if (position[0], position[1] + 1) not in open_list:
-                            open_list.append((position[0], position[1] + 1))
-                    else:
-                        closed_list.append((position[0], position[1] + 1))
-                if (position[1] - 1) >= game_board.width:
-                    if (
-                        game_board.matrix[position[0]][position[1] - 1] in heights
-                    ):
-                        if (position[0], position[1] - 1) not in open_list:
-                            open_list.append((position[0], position[1] - 1))
-                        open_list.append((position[0], position[1] - 1))
-                    else:
-                        closed_list.append((position[0], position[1] - 1))
-                if (position[0] + 1) <= game_board.height:
-                    if (
-                        game_board.matrix[position[0] + 1][position[1]] in heights
-                    ):
-                        if (position[0] + 1, position[1]) not in open_list:
-                            open_list.append((position[0] + 1, position[1]))
-                        open_list.append((position[0] + 1, position[1]))
-                    else:
-                        closed_list.append((position[0] + 1, position[1]))
-                if (position[0] - 1) >= game_board.height:
-                    if (
-                        game_board.matrix[position[0] - 1][position[1]] in heights
-                    ):
-                        if (position[0] - 1, position[1]) not in open_list:
-                            open_list.append((position[0] - 1, position[1]))
-                        open_list.append((position[0] - 1, position[1]))
-                    else:
-                        closed_list.append((position[0] - 1, position[1]))
-        if (position[0], position[1]) in open_list:
-            if len(open_list) < best_distance:
-                best_distance = len(open_list)
-            else:
-                print("not enough")
+                right = position[1] + 1
+                left = position[1] - 1
+                up = position[0] + 1
+                down = position[0] - 1
+                if (right) < game_board.width:
+                    if (game_board.matrix[position[0]][right] in heights):
+                        if ((position[0], right, distance) not in open_list):
+                            new_open_list[position[0], right] = distance
+                if (left) >= 0:
+                    if (game_board.matrix[position[0]][left] in heights):
+                        if (((position[0], left, distance) not in open_list)):
+                            new_open_list[position[0], left] = distance
+                if (up) < game_board.height:
+                    if (game_board.matrix[up][position[1]] in heights):
+                        if (up, position[1], distance) not in open_list:
+                            new_open_list[up, position[1]] = distance
+                if (down) >= 0:
+                    if (game_board.matrix[down][position[1]] in heights):
+                        if (down, position[1], distance) not in open_list:
+                            new_open_list[down, position[1]] = distance
+                closed_list[position[0], position[1]] = distance
+        open_list = new_open_list
     return best_distance
+
+
 def parse_input(lines: list[str]):
     height = len(lines)
     width = len(lines[0])
@@ -144,12 +149,12 @@ def parse_input(lines: list[str]):
         for j in range(len(lines[0])):
             character = lines[i][j]
             if character == "S":
-                start_x = i
-                start_y = j
+                start_x = j
+                start_y = i
             elif character == "E":
-                goal_x = i
-                goal_y = j
-                matrix[1][j] = 9
+                goal_x = j
+                goal_y = i
+                matrix[i][j] = 25
             else:
                 matrix[i][j] = ord(character) - 97
     return GameBoard(
@@ -158,13 +163,31 @@ def parse_input(lines: list[str]):
         start_y,
         goal_x,
         goal_y,
-        width - 1,
-        height - 1,
+        width,
+        height,
     )
+
+
+def print_game_board(
+    game_board: GameBoard,
+    position_y: int,
+    position_x: int,
+    open_list: dict[tuple[int, int], int],
+    closed_ist: dict[tuple[int, int], int]
+):
+    printed_game_board = np.zeros((game_board.height, game_board.width), dtype=str)
+    printed_game_board.fill("_")
+    for item in open_list:
+        printed_game_board[item[0], item[1]] = "0"
+    for closed_item in closed_ist:
+        printed_game_board[closed_item[0], closed_item[1]] = "X"
+    printed_game_board[position_y, position_x] = "█"
+    print(printed_game_board)
+
 
 if __name__ == "__main__":
     lines = get_values_from_file(
-        "C:\\Users\\Shane\\Documents\\GitHub\\Advent-of-Code-2022\\Puzzle Files\\test_input.txt"
+        "C:\\Users\\srideout\\Desktop\\Advent of Code\\example.txt"
     )
     print(part_one(lines))
     print(part_two(lines))
